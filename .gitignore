@@ -21,3 +21,10 @@ Thumbs.db
 videos/
 *.mp4
 *.avi
+
+# Temporary files
+temp/
+*.tmp
+
+# YouTube OAuth2 tokens
+.youtube-tokens.json

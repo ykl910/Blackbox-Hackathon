@@ -109,6 +109,9 @@ function showResult(type, message, data = null) {
                             <button onclick="copyToClipboard('${videoUrl}')" class="btn btn-secondary">
                                 📋 Copy Link
                             </button>
+                            <button onclick="uploadToYouTube('${videoUrl}')" class="btn btn-youtube">
+                                📺 Upload to YouTube
+                            </button>
                         </div>
                     </div>
                 `;
@@ -155,6 +158,185 @@ function copyToClipboard(text) {
     }).catch(err => {
         alert('Failed to copy: ' + err);
     });
+}
+
+// Upload video to YouTube (automatic with OAuth2)
+async function uploadToYouTube(videoUrl) {
+    const btn = event.target;
+    const originalText = btn.textContent;
+    
+    try {
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Checking authentication...';
+        
+        // Check authentication status
+        const authStatusResponse = await fetch('/api/youtube/auth-status');
+        const authStatus = await authStatusResponse.json();
+
+        if (!authStatus.configured) {
+            alert('YouTube OAuth2 is not configured.\n\nPlease set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in your .env file.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+
+        if (!authStatus.authenticated) {
+            // Need to authenticate first
+            btn.innerHTML = '<span class="spinner"></span> Redirecting to authenticate...';
+            
+            const authUrlResponse = await fetch('/api/youtube/auth-url');
+            const authUrlData = await authUrlResponse.json();
+            
+            if (authUrlData.success) {
+                // Open auth URL in new window
+                const authWindow = window.open(authUrlData.authUrl, 'YouTube Authentication', 'width=600,height=700');
+                
+                alert('Please complete the authentication in the popup window.\n\nAfter authenticating, close the popup and click "Upload to YouTube" again.');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+
+        // User is authenticated, proceed with upload
+        btn.innerHTML = '<span class="spinner"></span> Uploading to YouTube...';
+
+        const response = await fetch('/api/youtube/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                videoUrl: videoUrl,
+                metadata: {
+                    title: 'AI Generated Video - ' + new Date().toLocaleDateString(),
+                    description: 'Video generated using Blackbox AI Video Generator\n\nGenerated on: ' + new Date().toLocaleString(),
+                    tags: ['AI Generated', 'Blackbox AI', 'Video Generation'],
+                    privacyStatus: 'private'
+                }
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`✓ Video uploaded successfully to YouTube!\n\nTitle: ${result.title}\nVideo ID: ${result.videoId}\n\nOpening YouTube video...`);
+            // Open YouTube video in new tab
+            window.open(result.videoUrl, '_blank');
+        } else if (result.authRequired) {
+            alert('Authentication required. Please authenticate and try again.');
+            if (result.authUrl) {
+                window.open(result.authUrl, 'YouTube Authentication', 'width=600,height=700');
+            }
+        } else {
+            alert('Upload failed: ' + (result.error || result.message));
+        }
+
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Error uploading to YouTube: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+// Show YouTube upload instructions in a modal
+function showYouTubeInstructions(data) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📺 Upload to YouTube</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-message">
+                    ℹ️ YouTube requires OAuth2 authentication for automatic uploads. Follow these steps to upload manually:
+                </div>
+                
+                <div class="metadata-section">
+                    <h3>Suggested Metadata:</h3>
+                    <div class="metadata-item">
+                        <strong>Title:</strong>
+                        <div class="metadata-value">${data.metadata.title}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>Description:</strong>
+                        <div class="metadata-value">${data.metadata.description}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>Tags:</strong>
+                        <div class="metadata-value">${data.metadata.tags}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>Privacy:</strong>
+                        <div class="metadata-value">${data.metadata.privacy}</div>
+                    </div>
+                </div>
+
+                <div class="instructions-section">
+                    <h3>Upload Instructions:</h3>
+                    <ol class="instructions-list">
+                        ${data.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                    </ol>
+                </div>
+
+                <div class="video-link-section">
+                    <strong>Video URL:</strong>
+                    <div class="video-link">
+                        <input type="text" value="${data.videoUrl}" readonly id="youtubeVideoUrl">
+                        <button onclick="copyYouTubeUrl()" class="btn btn-secondary btn-small">Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="${data.videoUrl}" download="generated-video.mp4" class="btn btn-download">
+                    📥 Download Video
+                </a>
+                <a href="https://studio.youtube.com" target="_blank" class="btn btn-youtube">
+                    Open YouTube Studio
+                </a>
+                <button onclick="closeModal()" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+// Copy YouTube video URL from modal
+function copyYouTubeUrl() {
+    const input = document.getElementById('youtubeVideoUrl');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // Initialize
