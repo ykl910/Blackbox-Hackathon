@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackbox Video Generator</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Blackbox Video Generator</h1>
+            <p class="subtitle">Generate amazing videos with AI-powered prompts</p>
+        </header>
+
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">Checking API status...</span>
+        </div>
+
+        <main>
+            <div class="card">
+                <h2>Generate Video</h2>
+                <form id="videoForm">
+                    <div class="form-group">
+                        <label for="prompt">Video Prompt</label>
+                        <textarea 
+                            id="prompt" 
+                            name="prompt" 
+                            rows="4" 
+                            placeholder="Describe the video you want to generate... (e.g., 'A serene sunset over mountains with birds flying')"
+                            required
+                        ></textarea>
+                        <small>Be descriptive and specific for best results</small>
+                    </div>
+
+                    <button type="submit" id="generateBtn" class="btn btn-primary">
+                        <span class="btn-text">Generate Video</span>
+                        <span class="btn-loader" style="display: none;">
+                            <span class="spinner"></span> Generating...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="card result-card" id="resultCard" style="display: none;">
+                <h2>Result</h2>
+                <div id="resultContent"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Blackbox AI</p>
+        </footer>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

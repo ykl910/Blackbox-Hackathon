@@ -1,0 +1,24 @@
+{
+  "name": "blackbox-video-generator",
+  "version": "1.0.0",
+  "description": "Web application to generate videos using Blackbox API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "blackbox",
+    "video",
+    "generation",
+    "fastify"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/static": "^7.0.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.25.0"
+  }
+}
