@@ -1,0 +1,275 @@
+/* A/B Testing Specific Styles */
+
+.nav-links {
+    margin-top: 15px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    transition: background 0.3s;
+}
+
+.nav-links a:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.progress-card {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+}
+
+.progress-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin: 8px 0;
+    background: white;
+    border-radius: 6px;
+}
+
+.progress-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.progress-status {
+    color: #667eea;
+    font-weight: 500;
+}
+
+.progress-status.generating {
+    color: #f59e0b;
+}
+
+.progress-status.uploading {
+    color: #3b82f6;
+}
+
+.progress-status.complete {
+    color: #10b981;
+}
+
+.progress-status.error {
+    color: #ef4444;
+}
+
+.comparison-section {
+    margin-top: 30px;
+}
+
+.comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.comparison-header h2 {
+    margin: 0;
+}
+
+.videos-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.video-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-column h3 {
+    text-align: center;
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-info {
+    margin-top: 15px;
+}
+
+.youtube-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #ff0000;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    transition: background 0.3s;
+}
+
+.youtube-link:hover {
+    background: #cc0000;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.stat-item:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: #888;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: 700;
+}
+
+.stat-item.winner {
+    background: #d4edda;
+    border-color: #10b981;
+}
+
+.stat-item.winner .stat-value {
+    color: #10b981;
+}
+
+.winner-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.winner-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+#winnerContent {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .videos-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .comparison-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .comparison-header h2 {
+        text-align: center;
+    }
+
+    .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .video-column h3 {
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+}

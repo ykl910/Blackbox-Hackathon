@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Video Testing - Blackbox</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/ab-test.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 A/B Video Testing</h1>
+            <p class="subtitle">Generate two videos with the same prompt and compare YouTube stats</p>
+            <nav class="nav-links">
+                <a href="/">← Back to Generator</a>
+            </nav>
+        </header>
+
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">Checking API status...</span>
+        </div>
+
+        <main>
+            <!-- Prompt Input Section -->
+            <div class="card">
+                <h2>Test Configuration</h2>
+                <form id="abTestForm">
+                    <div class="form-group">
+                        <label for="prompt">Video Prompt (Same for both videos)</label>
+                        <textarea 
+                            id="prompt" 
+                            name="prompt" 
+                            rows="4" 
+                            placeholder="Describe the video you want to generate... (e.g., 'A serene sunset over mountains with birds flying')"
+                            required
+                        ></textarea>
+                        <small>Both videos will be generated with this exact prompt</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="videoTitle">Video Title Template</label>
+                        <input 
+                            type="text" 
+                            id="videoTitle" 
+                            name="videoTitle" 
+                            placeholder="My Test Video"
+                            value="A/B Test Video"
+                        >
+                        <small>Videos will be titled: "Video A: [title]" and "Video B: [title]"</small>
+                    </div>
+
+                    <button type="submit" id="generateBtn" class="btn btn-primary">
+                        <span class="btn-text">🎬 Generate & Upload Both Videos</span>
+                        <span class="btn-loader" style="display: none;">
+                            <span class="spinner"></span> Processing...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="card progress-card" id="progressCard" style="display: none;">
+                <h2>Generation Progress</h2>
+                <div id="progressContent">
+                    <div class="progress-item">
+                        <span class="progress-label">Video A:</span>
+                        <span class="progress-status" id="videoAStatus">Waiting...</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-label">Video B:</span>
+                        <span class="progress-status" id="videoBStatus">Waiting...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Section -->
+            <div class="comparison-section" id="comparisonSection" style="display: none;">
+                <div class="card">
+                    <div class="comparison-header">
+                        <h2>📊 Live Stats Comparison</h2>
+                        <button id="refreshStatsBtn" class="btn btn-secondary">
+                            🔄 Refresh Stats
+                        </button>
+                    </div>
+                    
+                    <div class="videos-container">
+                        <!-- Video A -->
+                        <div class="video-column">
+                            <h3>Video A</h3>
+                            <div class="video-wrapper" id="videoAWrapper">
+                                <video id="videoA" controls preload="metadata">
+                                    <source id="videoASource" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-info">
+                                <a id="videoALink" href="#" target="_blank" class="youtube-link">
+                                    📺 Open on YouTube
+                                </a>
+                                <div class="stats-grid" id="statsA">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Views</span>
+                                        <span class="stat-value" id="viewsA">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Likes</span>
+                                        <span class="stat-value" id="likesA">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Comments</span>
+                                        <span class="stat-value" id="commentsA">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Duration</span>
+                                        <span class="stat-value" id="durationA">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video B -->
+                        <div class="video-column">
+                            <h3>Video B</h3>
+                            <div class="video-wrapper" id="videoBWrapper">
+                                <video id="videoB" controls preload="metadata">
+                                    <source id="videoBSource" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-info">
+                                <a id="videoBLink" href="#" target="_blank" class="youtube-link">
+                                    📺 Open on YouTube
+                                </a>
+                                <div class="stats-grid" id="statsB">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Views</span>
+                                        <span class="stat-value" id="viewsB">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Likes</span>
+                                        <span class="stat-value" id="likesB">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Comments</span>
+                                        <span class="stat-value" id="commentsB">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Duration</span>
+                                        <span class="stat-value" id="durationB">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Winner Section -->
+                    <div class="winner-section" id="winnerSection" style="display: none;">
+                        <h3>🏆 Current Leader</h3>
+                        <div id="winnerContent"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Blackbox AI</p>
+        </footer>
+    </div>
+
+    <script src="/ab-test.js"></script>
+</body>
+</html>

@@ -12,17 +12,26 @@ A web application built with Node.js and Fastify that connects to the Blackbox A
 - 🌐 Clean and intuitive web interface
 
 ### YouTube Integration
-- 📺 Upload to YouTube with guided instructions
+- 📺 **Automatic YouTube Upload** with OAuth2 authentication
+- 🔐 Secure OAuth2 flow with token persistence
 - 📝 Pre-filled metadata (title, description, tags)
-- 🔗 Direct links to YouTube Studio
-- 📋 Easy copy of video URLs and metadata
-- ✨ Beautiful modal interface
+- 🎯 One-click upload after authentication
+- 🔗 Direct links to uploaded videos
+
+### A/B Testing (NEW!)
+- 📊 **Generate two videos with the same prompt**
+- 🔄 **Compare live YouTube statistics**
+- 📈 Track views, likes, comments in real-time
+- 🏆 Automatic winner detection based on engagement
+- ⚡ Parallel video generation and upload
+- 📱 Side-by-side comparison view
 
 ### Technical Features
 - ⚡ Fast and lightweight Fastify backend
 - 🔒 Secure API key management with environment variables
 - 📊 Real-time API health monitoring
 - 📱 Fully responsive design (mobile & desktop)
+- 🔐 OAuth2 authentication with Google
 
 ## Prerequisites
 
@@ -51,15 +60,17 @@ A web application built with Node.js and Fastify that connects to the Blackbox A
    BLACKBOX_API_URL=https://api.blackbox.ai/chat/completions
    BLACKBOX_MODEL=blackboxai/google/veo-2
    
-   # YouTube API (Optional - for upload instructions)
-   YOUTUBE_API_KEY=your_youtube_api_key_here
+   # YouTube OAuth2 (Required for automatic upload and A/B testing)
+   YOUTUBE_CLIENT_ID=your_client_id_here
+   YOUTUBE_CLIENT_SECRET=your_client_secret_here
+   YOUTUBE_REDIRECT_URI=http://localhost:3000/auth/youtube/callback
    
    # Server Configuration
    PORT=3000
    HOST=localhost
    ```
    
-   **Note:** YouTube API key is optional. Without it, you can still generate and view videos, but the YouTube upload feature will be disabled.
+   **Note:** YouTube OAuth2 credentials are required for automatic upload and A/B testing features. See `OAUTH2_SETUP_GUIDE.md` for setup instructions.
 
 ## Usage
 
@@ -82,7 +93,14 @@ A web application built with Node.js and Fastify that connects to the Blackbox A
    - Click "Generate Video"
    - Watch the video directly in the browser
    - Download the video or copy its link
-   - Upload to YouTube with guided instructions
+   - Upload to YouTube automatically with one click
+
+4. **A/B Testing (Optional):**
+   - Navigate to the A/B Testing page
+   - Enter a prompt to generate two videos
+   - Both videos upload automatically to YouTube
+   - Compare live statistics and engagement
+   - See which video performs better
 
 ## Project Structure
 
@@ -93,12 +111,18 @@ blackbox-video-generator/
 ├── .env                         # Environment variables (create this)
 ├── .env.example                 # Environment template
 ├── README.md                    # This file
+├── OAUTH2_SETUP_GUIDE.md       # OAuth2 setup instructions
+├── AUTOMATIC_UPLOAD_GUIDE.md   # Automatic upload guide
+├── AB_TESTING_GUIDE.md         # A/B testing guide
 ├── YOUTUBE_SETUP.md            # YouTube integration guide
 ├── TODO.md                      # Implementation tracking
 ├── public/                      # Frontend files
 │   ├── index.html              # Main UI
+│   ├── app.js                  # Frontend logic
 │   ├── styles.css              # Styling
-│   └── app.js                  # Frontend logic
+│   ├── ab-test.html            # A/B testing page
+│   ├── ab-test.js              # A/B testing logic
+│   └── ab-test.css             # A/B testing styles
 ├── src/
 │   ├── routes/
 │   │   └── video.js            # API routes (video + YouTube)
@@ -136,8 +160,8 @@ Generate a video from a text prompt.
 
 ### YouTube Integration
 
-#### POST `/api/youtube/instructions`
-Get step-by-step instructions for uploading a video to YouTube.
+#### POST `/api/youtube/upload`
+Automatically upload a video to YouTube (requires OAuth2 authentication).
 
 **Request Body:**
 ```json
@@ -156,23 +180,39 @@ Get step-by-step instructions for uploading a video to YouTube.
 ```json
 {
   "success": true,
-  "videoUrl": "https://example.com/video.mp4",
-  "metadata": {
-    "title": "My Video Title",
-    "description": "Video description",
-    "tags": "tag1, tag2",
-    "privacy": "private"
-  },
-  "instructions": [
-    "1. Download the video from the link above",
-    "2. Go to YouTube Studio...",
-    // More steps...
-  ]
+  "videoId": "abc123xyz",
+  "videoUrl": "https://www.youtube.com/watch?v=abc123xyz",
+  "title": "My Video Title",
+  "message": "Video uploaded successfully to YouTube!"
 }
 ```
 
-#### POST `/api/youtube/upload`
-Attempt to upload video to YouTube (requires OAuth2 - currently returns instructions).
+#### GET `/api/youtube/auth-url`
+Get OAuth2 authorization URL for YouTube authentication.
+
+#### GET `/auth/youtube/callback`
+OAuth2 callback endpoint (handles authentication).
+
+#### GET `/api/youtube/auth-status`
+Check YouTube authentication status.
+
+#### GET `/api/youtube/stats/:videoId`
+Get live statistics for a YouTube video.
+
+**Response:**
+```json
+{
+  "success": true,
+  "stats": {
+    "viewCount": "1234",
+    "likeCount": "56",
+    "commentCount": "12",
+    "duration": "2m 30s",
+    "publishedAt": "2024-01-01T00:00:00Z",
+    "title": "Video Title"
+  }
+}
+```
 
 ### Health Check
 
@@ -185,32 +225,63 @@ Check API health and configuration status.
   "status": "ok",
   "apiConfigured": true,
   "youtubeConfigured": true,
+  "youtubeAuthenticated": true,
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-## YouTube Upload Guide
+## YouTube Automatic Upload
 
-The application provides guided instructions for uploading videos to YouTube. Here's how it works:
+The application now supports automatic YouTube uploads with OAuth2 authentication:
 
-### Current Implementation (Manual Upload)
+### Setup
+1. Create OAuth2 credentials in Google Cloud Console
+2. Add credentials to `.env` file
+3. Enable YouTube Data API v3
+4. See `OAUTH2_SETUP_GUIDE.md` for detailed setup
+
+### How It Works
 1. Generate a video using the Blackbox API
-2. Click the "📺 Upload to YouTube" button
-3. A modal appears with:
-   - Pre-filled metadata (title, description, tags)
-   - Step-by-step upload instructions
-   - Video download link
-   - Direct link to YouTube Studio
-4. Follow the instructions to upload manually
+2. Click "📺 Upload to YouTube"
+3. First time: Authenticate with Google (popup window)
+4. After authentication: One-click automatic upload
+5. Video opens in YouTube automatically
 
-### Why Manual Upload?
-- **Simple**: No OAuth2 complexity
-- **Secure**: No token management required
-- **Immediate**: Works right away
-- **Flexible**: Full control over upload process
+### Features
+- ✅ Secure OAuth2 authentication
+- ✅ Token persistence (no re-auth needed)
+- ✅ Automatic video download and upload
+- ✅ Pre-filled metadata
+- ✅ Direct link to uploaded video
 
-### Future: Automatic Upload
-For automatic uploads, OAuth2 authentication would be required. See `YOUTUBE_SETUP.md` for details on implementing this feature.
+See `AUTOMATIC_UPLOAD_GUIDE.md` for detailed usage instructions.
+
+## A/B Testing Feature
+
+Compare two AI-generated videos with the same prompt and track their YouTube performance:
+
+### How to Use
+1. Navigate to the A/B Testing page (`/ab-test.html`)
+2. Enter a prompt (same for both videos)
+3. Click "Generate & Upload Both Videos"
+4. Wait for parallel generation and upload
+5. View side-by-side comparison with live stats
+6. Click "Refresh Stats" to update metrics
+
+### What's Compared
+- **Views**: Total video views
+- **Likes**: Number of likes
+- **Comments**: Comment count
+- **Duration**: Video length
+- **Engagement Score**: Views + (Likes × 10)
+
+### Use Cases
+- Test prompt variations
+- Compare video quality
+- Optimize content strategy
+- Make data-driven decisions
+
+See `AB_TESTING_GUIDE.md` for detailed instructions.
 
 ## Example Prompts
 
@@ -271,9 +342,12 @@ Try these prompts for video generation:
 ## Documentation
 
 - `README.md` - This file (main documentation)
-- `YOUTUBE_SETUP.md` - Detailed YouTube integration guide
-- `TODO.md` - Implementation tracking and features
-- `API_CONFIGURATION.md` - Blackbox API configuration details
+- `OAUTH2_SETUP_GUIDE.md` - OAuth2 setup for YouTube
+- `AUTOMATIC_UPLOAD_GUIDE.md` - Automatic upload guide
+- `AB_TESTING_GUIDE.md` - A/B testing feature guide
+- `YOUTUBE_SETUP.md` - YouTube integration overview
+- `TODO.md` - Implementation tracking
+- `API_CONFIGURATION.md` - Blackbox API configuration
 
 ## Contributing
 

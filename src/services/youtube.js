@@ -239,6 +239,90 @@ class YouTubeService {
   }
 
   /**
+   * Get video statistics from YouTube
+   */
+  async getVideoStats(videoId) {
+    try {
+      if (!this.isConfigured()) {
+        throw new Error('YouTube OAuth2 not configured');
+      }
+
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Not authenticated',
+          authRequired: true,
+          message: 'Please authenticate with YouTube first'
+        };
+      }
+
+      // Initialize YouTube API
+      const youtube = google.youtube({
+        version: 'v3',
+        auth: this.oauth2Client
+      });
+
+      // Fetch video statistics
+      const response = await youtube.videos.list({
+        part: ['statistics', 'contentDetails', 'snippet'],
+        id: [videoId]
+      });
+
+      if (!response.data.items || response.data.items.length === 0) {
+        return {
+          success: false,
+          error: 'Video not found'
+        };
+      }
+
+      const video = response.data.items[0];
+      const stats = video.statistics;
+      const contentDetails = video.contentDetails;
+      const snippet = video.snippet;
+
+      return {
+        success: true,
+        stats: {
+          viewCount: stats.viewCount || '0',
+          likeCount: stats.likeCount || '0',
+          commentCount: stats.commentCount || '0',
+          duration: this.formatDuration(contentDetails.duration),
+          publishedAt: snippet.publishedAt,
+          title: snippet.title
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching video stats:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Format ISO 8601 duration to readable format
+   */
+  formatDuration(duration) {
+    try {
+      const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+      
+      const hours = (match[1] || '').replace('H', '');
+      const minutes = (match[2] || '').replace('M', '');
+      const seconds = (match[3] || '').replace('S', '');
+
+      const parts = [];
+      if (hours) parts.push(`${hours}h`);
+      if (minutes) parts.push(`${minutes}m`);
+      if (seconds) parts.push(`${seconds}s`);
+
+      return parts.join(' ') || '0s';
+    } catch (error) {
+      return duration;
+    }
+  }
+
+  /**
    * Clean up temporary files
    */
   async cleanupTempFile(filePath) {

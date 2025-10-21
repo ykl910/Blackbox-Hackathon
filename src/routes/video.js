@@ -270,6 +270,43 @@ async function videoRoutes(fastify, options) {
     }
   });
 
+  // Get YouTube video statistics
+  fastify.get('/api/youtube/stats/:videoId', async (request, reply) => {
+    try {
+      const { videoId } = request.params;
+
+      if (!videoId) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Video ID is required'
+        });
+      }
+
+      if (!youtubeService.isConfigured()) {
+        return reply.code(500).send({
+          success: false,
+          error: 'YouTube OAuth2 is not configured'
+        });
+      }
+
+      if (!youtubeService.isAuthenticated()) {
+        return reply.code(401).send({
+          success: false,
+          error: 'Not authenticated with YouTube'
+        });
+      }
+
+      const stats = await youtubeService.getVideoStats(videoId);
+      return reply.send(stats);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  });
+
   // Health check endpoint
   fastify.get('/api/health', async (request, reply) => {
     return {
