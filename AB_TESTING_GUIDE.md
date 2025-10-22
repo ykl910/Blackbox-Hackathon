@@ -33,17 +33,32 @@ The A/B Testing feature allows you to generate two videos with the same prompt a
 - Videos will be titled: "Video A: [your title]" and "Video B: [your title]"
 - Default: "A/B Test Video"
 
-### 3. Generate and Upload
+### 3. Generate Videos
 
-1. Click "🎬 Generate & Upload Both Videos"
+1. Click "🎬 Generate Both Videos"
 2. Wait for both videos to generate (this happens in parallel)
-3. Both videos will automatically upload to YouTube
-4. Progress is shown for each video:
+3. Progress is shown for each video:
    - ⏳ Generating...
-   - 📤 Uploading to YouTube...
-   - ✓ Complete
+   - ✓ Generated
 
-### 4. View Comparison
+### 4. Preview and Review
+
+Once generation is complete:
+- Both videos will display side-by-side
+- You can watch and compare the videos
+- Download either or both videos if desired
+- Review quality before uploading to YouTube
+
+### 5. Upload to YouTube
+
+When you're ready to upload:
+1. Click "📺 Upload Both to YouTube"
+2. Both videos will upload in parallel
+3. Progress updates:
+   - 📤 Uploading to YouTube...
+   - ✓ Uploaded
+
+### 6. View Comparison
 
 Once both videos are uploaded, you'll see:
 
@@ -62,7 +77,7 @@ Once both videos are uploaded, you'll see:
 - Engagement Score = Views + (Likes × 10)
 - Updates when you refresh stats
 
-### 5. Refresh Stats
+### 7. Refresh Stats
 
 - Click "🔄 Refresh Stats" to get the latest YouTube statistics
 - Stats are fetched in real-time from YouTube API
@@ -110,7 +125,13 @@ Videos are uploaded as **PUBLIC** by default for A/B testing purposes:
 
 ## Use Cases
 
-### 1. Prompt Optimization
+### 1. Quality Check Before Upload
+Generate two videos and review them before uploading:
+- Compare video quality
+- Choose the best one
+- Save YouTube quota by only uploading good videos
+
+### 2. Prompt Optimization
 Test different variations of the same prompt to see which generates better videos:
 - Compare video quality
 - See which gets more engagement
@@ -130,11 +151,14 @@ Since AI generation can vary:
 
 ## Tips for Best Results
 
-1. **Wait for Views**: Give videos time to accumulate views before comparing
-2. **Refresh Regularly**: Click refresh stats periodically to see updated metrics
-3. **Share Both Videos**: Share both videos equally to get fair comparison
-4. **Same Conditions**: Upload both at the same time for fair testing
-5. **Monitor Over Time**: Check stats at different time intervals
+1. **Review Before Upload**: Watch both generated videos before uploading to YouTube
+2. **Save Quota**: Only upload videos you're satisfied with to conserve YouTube quota
+3. **Download Backups**: Download videos before uploading in case you want to re-upload later
+4. **Wait for Views**: Give videos time to accumulate views before comparing
+5. **Refresh Regularly**: Click refresh stats periodically to see updated metrics
+6. **Share Both Videos**: Share both videos equally to get fair comparison
+7. **Same Conditions**: Upload both at the same time for fair testing
+8. **Monitor Over Time**: Check stats at different time intervals
 
 ## Troubleshooting
 
@@ -147,6 +171,16 @@ Since AI generation can vary:
 - Set `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` in `.env`
 - See `OAUTH2_SETUP_GUIDE.md` for setup instructions
 
+### "YouTube upload quota exceeded"
+- **Most Common Issue**: You've hit YouTube's daily upload limit
+- **Default Limit**: ~6 videos per day (10,000 units quota)
+- **A/B Testing Uses**: 3,200 units (2 videos × 1,600 units each)
+- **Solutions**:
+  - Wait until midnight Pacific Time for quota reset
+  - Use a different Google account with separate project
+  - Request quota increase from Google
+- See `YOUTUBE_QUOTA_GUIDE.md` for detailed solutions
+
 ### Stats showing zeros
 - Videos need time to accumulate views
 - Make sure videos are public
@@ -157,6 +191,7 @@ Since AI generation can vary:
 - Check YouTube Data API v3 is enabled
 - Verify OAuth2 authentication is complete
 - Check server logs for detailed error messages
+- Verify you haven't exceeded daily quota
 
 ## API Endpoints Used
 
@@ -191,6 +226,23 @@ const scoreB = viewsB + (likesB * 10);
 - All stats are fetched live from YouTube
 - Videos remain on your YouTube channel
 - You have full control over uploaded videos
+
+## Quota Considerations
+
+### YouTube API Limits
+- **Daily Quota**: 10,000 units (default)
+- **Upload Cost**: 1,600 units per video
+- **A/B Test Cost**: 3,200 units (2 videos)
+- **Daily A/B Tests**: ~3 tests per day
+
+### Tips to Manage Quota:
+1. Plan your A/B tests in advance
+2. Use private videos for initial testing
+3. Wait for quota reset at midnight PT
+4. Request quota increase for production use
+5. Use separate Google account for more tests
+
+See `YOUTUBE_QUOTA_GUIDE.md` for complete quota management guide.
 
 ## Next Steps
 

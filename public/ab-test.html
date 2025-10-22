@@ -51,9 +51,9 @@
                     </div>
 
                     <button type="submit" id="generateBtn" class="btn btn-primary">
-                        <span class="btn-text">🎬 Generate & Upload Both Videos</span>
+                        <span class="btn-text">🎬 Generate Both Videos</span>
                         <span class="btn-loader" style="display: none;">
-                            <span class="spinner"></span> Processing...
+                            <span class="spinner"></span> Generating...
                         </span>
                     </button>
                 </form>
@@ -74,7 +74,56 @@
                 </div>
             </div>
 
-            <!-- Comparison Section -->
+            <!-- Generated Videos Section -->
+            <div class="comparison-section" id="generatedSection" style="display: none;">
+                <div class="card">
+                    <div class="comparison-header">
+                        <h2>📹 Generated Videos</h2>
+                        <button id="uploadBothBtn" class="btn btn-primary">
+                            <span class="upload-btn-text">📺 Upload Both to YouTube</span>
+                            <span class="upload-btn-loader" style="display: none;">
+                                <span class="spinner"></span> Uploading...
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <div class="videos-container">
+                        <!-- Video A -->
+                        <div class="video-column">
+                            <h3>Video A</h3>
+                            <div class="video-wrapper" id="videoAWrapper">
+                                <video id="videoAPreview" controls preload="metadata">
+                                    <source id="videoAPreviewSource" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-actions">
+                                <a id="videoADownload" href="#" download="video-a.mp4" class="btn btn-download">
+                                    📥 Download Video A
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Video B -->
+                        <div class="video-column">
+                            <h3>Video B</h3>
+                            <div class="video-wrapper" id="videoBWrapper">
+                                <video id="videoBPreview" controls preload="metadata">
+                                    <source id="videoBPreviewSource" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-actions">
+                                <a id="videoBDownload" href="#" download="video-b.mp4" class="btn btn-download">
+                                    📥 Download Video B
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Section (After Upload) -->
             <div class="comparison-section" id="comparisonSection" style="display: none;">
                 <div class="card">
                     <div class="comparison-header">

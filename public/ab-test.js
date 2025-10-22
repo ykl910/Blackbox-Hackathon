@@ -34,7 +34,7 @@ async function checkApiHealth() {
     }
 }
 
-// Handle form submission
+// Handle form submission - Generate videos only
 document.getElementById('abTestForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -44,6 +44,7 @@ document.getElementById('abTestForm').addEventListener('submit', async (e) => {
     const btnText = generateBtn.querySelector('.btn-text');
     const btnLoader = generateBtn.querySelector('.btn-loader');
     const progressCard = document.getElementById('progressCard');
+    const generatedSection = document.getElementById('generatedSection');
     const comparisonSection = document.getElementById('comparisonSection');
 
     const prompt = promptInput.value.trim();
@@ -63,6 +64,7 @@ document.getElementById('abTestForm').addEventListener('submit', async (e) => {
     btnText.style.display = 'none';
     btnLoader.style.display = 'inline-flex';
     progressCard.style.display = 'block';
+    generatedSection.style.display = 'none';
     comparisonSection.style.display = 'none';
 
     // Reset progress
@@ -80,32 +82,11 @@ document.getElementById('abTestForm').addEventListener('submit', async (e) => {
             testData.videoA = resultA;
             testData.videoB = resultB;
 
-            // Upload both videos to YouTube
-            updateProgress('videoAStatus', 'Uploading to YouTube...', 'uploading');
-            updateProgress('videoBStatus', 'Uploading to YouTube...', 'uploading');
+            updateProgress('videoAStatus', '✓ Generated', 'complete');
+            updateProgress('videoBStatus', '✓ Generated', 'complete');
 
-            const [uploadA, uploadB] = await Promise.all([
-                uploadToYouTube(resultA.videoUrl, `Video A: ${title}`),
-                uploadToYouTube(resultB.videoUrl, `Video B: ${title}`)
-            ]);
-
-            if (uploadA.success && uploadB.success) {
-                testData.videoA.youtubeId = uploadA.videoId;
-                testData.videoA.youtubeUrl = uploadA.videoUrl;
-                testData.videoB.youtubeId = uploadB.videoId;
-                testData.videoB.youtubeUrl = uploadB.videoUrl;
-
-                updateProgress('videoAStatus', '✓ Complete', 'complete');
-                updateProgress('videoBStatus', '✓ Complete', 'complete');
-
-                // Display comparison
-                displayComparison();
-
-                // Fetch initial stats
-                await fetchAndUpdateStats();
-            } else {
-                throw new Error('Failed to upload videos to YouTube');
-            }
+            // Display generated videos for preview
+            displayGeneratedVideos();
         } else {
             throw new Error('Failed to generate videos');
         }
@@ -117,6 +98,68 @@ document.getElementById('abTestForm').addEventListener('submit', async (e) => {
     } finally {
         // Re-enable form
         generateBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+});
+
+// Handle upload button click
+document.getElementById('uploadBothBtn').addEventListener('click', async () => {
+    const uploadBtn = document.getElementById('uploadBothBtn');
+    const btnText = uploadBtn.querySelector('.upload-btn-text');
+    const btnLoader = uploadBtn.querySelector('.upload-btn-loader');
+    const progressCard = document.getElementById('progressCard');
+
+    // Disable button and show loading
+    uploadBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'inline-flex';
+    progressCard.style.display = 'block';
+
+    try {
+        // Upload both videos to YouTube
+        updateProgress('videoAStatus', 'Uploading to YouTube...', 'uploading');
+        updateProgress('videoBStatus', 'Uploading to YouTube...', 'uploading');
+
+        const [uploadA, uploadB] = await Promise.all([
+            uploadToYouTube(testData.videoA.videoUrl, `Video A: ${testData.title}`),
+            uploadToYouTube(testData.videoB.videoUrl, `Video B: ${testData.title}`)
+        ]);
+
+        if (uploadA.success && uploadB.success) {
+            testData.videoA.youtubeId = uploadA.videoId;
+            testData.videoA.youtubeUrl = uploadA.videoUrl;
+            testData.videoB.youtubeId = uploadB.videoId;
+            testData.videoB.youtubeUrl = uploadB.videoUrl;
+
+            updateProgress('videoAStatus', '✓ Uploaded', 'complete');
+            updateProgress('videoBStatus', '✓ Uploaded', 'complete');
+
+            // Hide generated section, show comparison
+            document.getElementById('generatedSection').style.display = 'none';
+
+            // Display comparison
+            displayComparison();
+
+            // Fetch initial stats
+            await fetchAndUpdateStats();
+        } else {
+            // Check for quota exceeded
+            if (uploadA.quotaExceeded || uploadB.quotaExceeded) {
+                throw new Error('YouTube upload quota exceeded. You can only upload a limited number of videos per day. Please try again tomorrow or use a different Google account.');
+            }
+            
+            const errorMsg = uploadA.error || uploadB.error || 'Failed to upload videos to YouTube';
+            throw new Error(errorMsg);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        updateProgress('videoAStatus', '✗ Error', 'error');
+        updateProgress('videoBStatus', '✗ Error', 'error');
+        alert('Error: ' + error.message);
+    } finally {
+        // Re-enable button
+        uploadBtn.disabled = false;
         btnText.style.display = 'inline';
         btnLoader.style.display = 'none';
     }
@@ -186,6 +229,16 @@ async function uploadToYouTube(videoUrl, title) {
         });
 
         const data = await response.json();
+        
+        // Check for quota exceeded error
+        if (!data.success && data.error && data.error.includes('quota')) {
+            return {
+                success: false,
+                error: 'YouTube upload quota exceeded. Please try again tomorrow or use a different Google account.',
+                quotaExceeded: true
+            };
+        }
+        
         return data;
     } catch (error) {
         return {
@@ -202,7 +255,28 @@ function updateProgress(elementId, text, className) {
     element.className = `progress-status ${className}`;
 }
 
-// Display comparison section
+// Display generated videos for preview
+function displayGeneratedVideos() {
+    const generatedSection = document.getElementById('generatedSection');
+    
+    // Set video sources
+    document.getElementById('videoAPreviewSource').src = testData.videoA.videoUrl;
+    document.getElementById('videoBPreviewSource').src = testData.videoB.videoUrl;
+    
+    // Set download links
+    document.getElementById('videoADownload').href = testData.videoA.videoUrl;
+    document.getElementById('videoBDownload').href = testData.videoB.videoUrl;
+    
+    // Reload videos
+    document.getElementById('videoAPreview').load();
+    document.getElementById('videoBPreview').load();
+    
+    // Show generated section
+    generatedSection.style.display = 'block';
+    generatedSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Display comparison section (after upload)
 function displayComparison() {
     const comparisonSection = document.getElementById('comparisonSection');
     
